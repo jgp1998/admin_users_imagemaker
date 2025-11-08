@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AppRoutes } from './routers/AppRoutes';
 
 const App = () => {
-  const [isAuthenticated] = useState(false);
+  const [isAuthenticated] = useState(true);
   const [isLoading] = useState(false);
   const [userRole] = useState<'admin' | 'editor' | 'viewer'>('admin');
 
