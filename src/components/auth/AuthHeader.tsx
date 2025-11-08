@@ -7,13 +7,13 @@ interface AuthHeaderProps {
 }
 export const AuthHeader = ({ title, subtitle }: AuthHeaderProps) => {
     return (
-        <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {title}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {subtitle}
-            </Typography>
-        </Box>
+          <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    {title}
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {subtitle}
+                </Typography>
+            </Box>
     )
 }

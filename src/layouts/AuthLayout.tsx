@@ -1,11 +1,12 @@
 import React from 'react';
 import { Box, Container } from '@mui/material';
+import { AvatarUser } from '../components/auth/AvatarUser';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
-export const AuthLayout = ({ children }:AuthLayoutProps) => {
+export const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
     <Box
       sx={{
@@ -36,8 +37,11 @@ export const AuthLayout = ({ children }:AuthLayoutProps) => {
             p: { xs: 3, sm: 4 },
           }}
         >
+          {/* Avatar de usuario */}
+          <AvatarUser />
           {children}
         </Box>
+
       </Container>
     </Box>
   );

@@ -1,5 +1,5 @@
-export { default as Login } from './Login';
-export { default as Register } from './Register';
+export { default as Login } from './auth/Login';
+export { default as Register } from './auth/Register';
 export { default as Dashboard } from './Dashboard';
-export { default as NotFound } from './NotFound';
-export { default as Unauthorized } from './Unauthorized';
+export { default as NotFound } from './auth/NotFound';
+export { default as Unauthorized } from './auth/Unauthorized';
