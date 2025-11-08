@@ -5,25 +5,35 @@ interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
-export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+export const AuthLayout = ({ children }:AuthLayoutProps) => {
   return (
     <Box
       sx={{
+        width: '100%',
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
         padding: 2,
+        overflow: 'hidden',
       }}
     >
-      <Container maxWidth="sm">
+      <Container
+        maxWidth="sm"
+        sx={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
         <Box
           sx={{
+            width: '100%',
             backgroundColor: '#ffffff',
             borderRadius: 2,
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-            p: { xs: 2, sm: 4 },
+            p: { xs: 3, sm: 4 },
           }}
         >
           {children}
