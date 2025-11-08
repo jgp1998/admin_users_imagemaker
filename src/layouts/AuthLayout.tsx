@@ -16,8 +16,8 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-        padding: 2,
-        overflow: 'hidden',
+        padding: 1,
+        overflow: 'auto',
       }}
     >
       <Container
@@ -26,6 +26,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
           width: '100%',
           display: 'flex',
           justifyContent: 'center',
+          py: 0,
         }}
       >
         <Box
@@ -34,7 +35,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
             backgroundColor: '#ffffff',
             borderRadius: 2,
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-            p: { xs: 3, sm: 4 },
+            p: { xs: 2, sm: 3 },
           }}
         >
           {/* Avatar de usuario */}
