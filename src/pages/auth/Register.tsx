@@ -14,10 +14,12 @@ import { AuthLayout } from '../../layouts/AuthLayout';
 import { AuthHeader } from '../../components/auth/AuthHeader';
 import { AuthButton, EmailField, LinkForm, PasswordField } from '../../components/auth/form';
 import { useAuthStore } from '../../store';
+import { useToast } from '../../hooks/useToast';
 
 const Register = () => {
     const navigate = useNavigate();
-    const { login, isLoading, error, clearError } = useAuthStore();
+    const { register, isLoading, error, clearError } = useAuthStore();
+    const { success, error: showError } = useToast();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -33,28 +35,36 @@ const Register = () => {
         setLocalError('');
 
         if (!name || !email || !password || !confirmPassword) {
-            setLocalError('Por favor completa todos los campos');
+            const msg = 'Por favor completa todos los campos';
+            setLocalError(msg);
+            showError(msg);
             return;
         }
 
         if (password !== confirmPassword) {
-            setLocalError('Las contraseñas no coinciden');
+            const msg = 'Las contraseñas no coinciden';
+            setLocalError(msg);
+            showError(msg);
             return;
         }
 
         if (password.length < 6) {
-            setLocalError('La contraseña debe tener al menos 6 caracteres');
+            const msg = 'La contraseña debe tener al menos 6 caracteres';
+            setLocalError(msg);
+            showError(msg);
             return;
         }
 
         try {
-            // Registrar y auto-login
-            await login(email, password);
+            // Registrar usuario
+            await register(name, email, password);
+            success('¡Cuenta creada exitosamente! Bienvenido al panel');
             // Navegar al dashboard
             navigate('/dashboard');
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Error al registrarse';
             setLocalError(errorMessage);
+            showError(errorMessage);
         }
     };
 

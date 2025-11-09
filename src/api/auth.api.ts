@@ -5,6 +5,12 @@ interface LoginRequest {
   password: string;
 }
 
+interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
 interface UserApiResponse {
   id: string;
   name: string;
@@ -23,6 +29,30 @@ interface LoginResponse {
 }
 
 export const authApi = {
+  /**
+   * Registro del usuario
+   * Usa el mismo endpoint que crear usuario, pero sin requerir x-token
+   */
+  register: async (credentials: RegisterRequest): Promise<LoginResponse> => {
+    // El registro crea un usuario con rol USER_ROLE por defecto
+    const { data } = await apiClient.post<LoginResponse>('/users/user', {
+      name: credentials.name,
+      email: credentials.email,
+      password: credentials.password,
+      rol: 'USER_ROLE',
+      state: true,
+      img: '',
+      google: false,
+    });
+    
+    // Guardar token en localStorage si viene en la respuesta
+    if (data.token) {
+      localStorage.setItem('auth_token', data.token);
+    }
+    
+    return data;
+  },
+
   /**
    * Login del usuario
    */

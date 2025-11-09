@@ -121,12 +121,20 @@ export const useUsersStore = create<UsersState>((set) => ({
     try {
       set({ isLoading: true, error: null });
       const response = await usersApi.getUsers({ page: 0, limit: 15 });
+      
+      // Mapeo inverso: API → Frontend
+      const apiRoleToAppRole: Record<string, string> = {
+        'ADMIN_ROLE': 'admin',
+        'USER_ROLE': 'editor',
+        'SALES_ROLE': 'viewer',
+      };
+      
       // Convertir respuesta de API a nuestro tipo
       const users: UserDto[] = response.users.map((user) => ({
         id: user.uid,
         name: user.name,
         email: user.email,
-        role: user.rol?.toLowerCase() === 'admin_role' ? 'admin' : 'viewer' as any,
+        role: (apiRoleToAppRole[user.rol] || 'viewer') as any,
         isActive: user.state !== false,
         claims: user.permissions || [],
         createdAt: new Date().toISOString().split('T')[0],
@@ -177,7 +185,31 @@ export const useUsersStore = create<UsersState>((set) => ({
   updateUser: async (id, updatedData) => {
     try {
       set({ isLoading: true, error: null });
-      await usersApi.updateUser(id, updatedData as any);
+      
+      // Mapeo: Frontend → API
+      const appRoleToApiRole: Record<string, string> = {
+        'admin': 'ADMIN_ROLE',
+        'editor': 'USER_ROLE',
+        'viewer': 'SALES_ROLE',
+      };
+
+      // Mapear datos del frontend al formato de la API
+      const apiUpdateData: any = {
+        name: updatedData.name,
+        email: updatedData.email,
+      };
+
+      // Mapear role a rol y convertir formato
+      if (updatedData.role) {
+        apiUpdateData.rol = appRoleToApiRole[updatedData.role] || 'USER_ROLE';
+      }
+
+      // Mapear isActive a state
+      if (updatedData.isActive !== undefined) {
+        apiUpdateData.state = updatedData.isActive;
+      }
+
+      await usersApi.updateUser(id, apiUpdateData);
       
       set((state) => ({
         users: state.users.map((user) =>

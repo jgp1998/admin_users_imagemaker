@@ -9,11 +9,13 @@ import { AuthHeader } from '../../components/auth/AuthHeader';
 import { AuthLayout } from '../../layouts/AuthLayout';
 import { EmailField, PasswordField, AuthButton, LinkForm } from '../../components/auth/form/';
 import { useAuthStore } from '../../store';
+import { useToast } from '../../hooks/useToast';
 
 
 const Login = () => {
     const navigate = useNavigate();
     const { login, isLoading, error, clearError } = useAuthStore();
+    const { success, error: showError } = useToast();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -27,18 +29,22 @@ const Login = () => {
 
         // Validaciones básicas
         if (!email || !password) {
-            setLocalError('Por favor completa todos los campos');
+            const msg = 'Por favor completa todos los campos';
+            setLocalError(msg);
+            showError(msg);
             return;
         }
 
         try {
             // Llamar al store para login con email y password
             await login(email, password);
+            success('¡Bienvenido al panel de administración!');
             // Navegar al dashboard
             navigate('/dashboard');
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
             setLocalError(errorMessage);
+            showError(errorMessage);
         }
     };
 

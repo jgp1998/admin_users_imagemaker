@@ -12,6 +12,7 @@ interface AuthState {
   
   // Acciones
   login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -19,11 +20,11 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  // Estado inicial
+  // Estado inicial - restaurar de localStorage si existe
   isAuthenticated: !!localStorage.getItem('auth_token'),
-  userRole: 'viewer',
-  userName: '',
-  userEmail: '',
+  userRole: (localStorage.getItem('user_role') as UserRole) || 'viewer',
+  userName: localStorage.getItem('user_name') || '',
+  userEmail: localStorage.getItem('user_email') || '',
   isLoading: false,
   error: null,
 
@@ -45,6 +46,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       
       const userRole = roleMap[response.user.rol] || 'viewer';
       
+      // Guardar información del usuario en localStorage
+      localStorage.setItem('user_name', response.user.name);
+      localStorage.setItem('user_email', response.user.email);
+      localStorage.setItem('user_role', userRole);
+      
       set({
         isAuthenticated: true,
         userName: response.user.name,
@@ -59,9 +65,51 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  // Registro
+  register: async (name, email, password) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      // Llamar a la API
+      const response = await authApi.register({ name, email, password });
+      
+      // Convertir rol de API a nuestro tipo
+      const roleMap: Record<string, UserRole> = {
+        'ADMIN_ROLE': 'admin',
+        'EDITOR_ROLE': 'editor',
+        'USER_ROLE': 'viewer',
+        'SALES_ROLE': 'viewer',
+      };
+      
+      const userRole = roleMap[response.user.rol] || 'viewer';
+      
+      // Guardar información del usuario en localStorage
+      localStorage.setItem('user_name', response.user.name);
+      localStorage.setItem('user_email', response.user.email);
+      localStorage.setItem('user_role', userRole);
+      
+      set({
+        isAuthenticated: true,
+        userName: response.user.name,
+        userEmail: response.user.email,
+        userRole,
+        isLoading: false,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al registrarse';
+      set({ error: errorMessage, isLoading: false });
+      throw err;
+    }
+  },
+
   // Logout
   logout: () => {
     authApi.logout();
+    // Limpiar datos del usuario de localStorage
+    localStorage.removeItem('user_name');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_role');
+    
     set({
       isAuthenticated: false,
       userRole: 'viewer',

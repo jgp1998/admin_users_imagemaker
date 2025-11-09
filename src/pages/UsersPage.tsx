@@ -1,9 +1,15 @@
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import UsersTable from '../components/UsersTable';
+import { useAuthStore } from '../store';
 
 export const UsersPage = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
+
   const handleLogout = () => {
-    console.log('Logout desde Users');
+    logout();
+    navigate('/login');
   };
 
   const handleProfileClick = () => {

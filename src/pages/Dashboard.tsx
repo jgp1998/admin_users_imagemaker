@@ -1,11 +1,16 @@
+import { useNavigate } from 'react-router-dom';
 import {
     Box,
     Typography,
     Card,
 } from '@mui/material';
 import { DashboardLayout } from '../layouts/DashboardLayout';
+import { useAuthStore } from '../store';
 
 const Dashboard = () => {
+    const navigate = useNavigate();
+    const { logout } = useAuthStore();
+
     const stats = [
         { title: 'Total Usuarios', value: '245', color: '#1976d2' },
         { title: 'Usuarios Activos', value: '198', color: '#388e3c' },
@@ -14,7 +19,8 @@ const Dashboard = () => {
     ];
 
     const handleLogout = () => {
-        console.log('Logout desde Dashboard');
+        logout();
+        navigate('/login');
     };
 
     const handleProfileClick = () => {

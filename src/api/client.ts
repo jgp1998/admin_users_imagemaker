@@ -27,7 +27,7 @@ apiClient.interceptors.request.use(
 // Interceptor de response - manejar errores
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  (error: AxiosError<any>) => {
     if (error.response?.status === 401) {
       // Token expirado o inválido
       localStorage.removeItem('auth_token');
@@ -35,8 +35,36 @@ apiClient.interceptors.response.use(
       logout();
       window.location.href = '/login';
     }
-    return Promise.reject(error);
+
+    // Extraer mensaje de error del backend
+    let errorMessage = 'Error desconocido';
+
+    if (error.response?.data) {
+      const data = error.response.data;
+
+      // Caso 1: Array de errores de validación
+      if (Array.isArray(data.errors) && data.errors.length > 0) {
+        errorMessage = data.errors[0].msg || data.errors[0].message || 'Error de validación';
+      }
+      // Caso 2: Mensaje directo
+      else if (data.message) {
+        errorMessage = data.message;
+      }
+      // Caso 3: Campo "msg"
+      else if (data.msg) {
+        errorMessage = data.msg;
+      }
+      // Caso 4: Campo "msj" (en español)
+      else if (data.msj) {
+        errorMessage = data.msj;
+      }
+    }
+
+    // Rechazar con error que incluya el mensaje extraído
+    const customError = new Error(errorMessage);
+    return Promise.reject(customError);
   }
 );
+
 
 export default apiClient;

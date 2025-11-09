@@ -72,9 +72,10 @@ export const DashboardLayout = ({
                         flex: 1,
                         overflow: 'auto',
                         p: { xs: 1, sm: 2, md: 3 },
+                        width: '100%',
                     }}
                 >
-                    <Container maxWidth="lg" sx={{ py: 2 }}>
+                    <Container maxWidth="lg" sx={{ py: 2, px: { xs: 1, sm: 2, md: 3 } }}>
                         {children}
                     </Container>
                 </Box>
