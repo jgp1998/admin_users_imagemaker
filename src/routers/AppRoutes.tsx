@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
 import { RoleProtectedRoute } from './RoleProtectedRoute';
-import { Login, Register, Dashboard, NotFound, Unauthorized } from '../pages';
+import { Login, Register, Dashboard, NotFound, Unauthorized, RolesAndPermissionsPage } from '../pages';
 import { UsersPage } from '../pages/UsersPage';
 import { useAuthStore } from '../store';
 
@@ -69,7 +69,7 @@ export const AppRoutes: React.FC = () => {
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
               <RoleProtectedRoute userRole={userRole} requiredRoles={['admin']}>
-                <div>Página de Permisos - Próximamente</div>
+                <RolesAndPermissionsPage />
               </RoleProtectedRoute>
             </PrivateRoute>
           }
