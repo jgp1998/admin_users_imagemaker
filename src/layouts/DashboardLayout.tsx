@@ -2,27 +2,23 @@ import React, { useState } from 'react';
 import { Box, Container } from '@mui/material';
 import { Header } from '../components/common/Header';
 import { Sidebar } from '../components/common/Sidebar';
+import { useAuthStore } from '../store';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
-    userName?: string;
-    userRole?: string;
     onLogout?: () => void;
     onProfileClick?: () => void;
     onSettingsClick?: () => void;
-    onNavigate?: (path: string) => void;
 }
 
 export const DashboardLayout = ({
     children,
-    userName = 'Usuario',
-    userRole = 'viewer',
     onLogout,
     onProfileClick,
     onSettingsClick,
-    onNavigate,
 }: DashboardLayoutProps) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { logout, userRole } = useAuthStore();
 
     const handleMenuToggle = () => {
         setSidebarOpen(!sidebarOpen);
@@ -32,12 +28,9 @@ export const DashboardLayout = ({
         setSidebarOpen(false);
     };
 
-    const handleNavigate = (path: string) => {
-        onNavigate?.(path);
-    };
-
     const handleLogout = () => {
         handleSidebarClose();
+        logout(); // Actualizar store
         onLogout?.();
     };
 
@@ -53,7 +46,6 @@ export const DashboardLayout = ({
             <Sidebar
                 open={sidebarOpen}
                 onClose={handleSidebarClose}
-                onNavigate={handleNavigate}
                 onLogout={handleLogout}
                 userRole={userRole}
             />
@@ -69,7 +61,6 @@ export const DashboardLayout = ({
                 {/* Header */}
                 <Header
                     onMenuToggle={handleMenuToggle}
-                    userName={userName}
                     onProfileClick={onProfileClick}
                     onSettingsClick={onSettingsClick}
                 />

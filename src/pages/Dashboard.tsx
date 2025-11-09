@@ -5,21 +5,13 @@ import {
 } from '@mui/material';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 
-interface DashboardProps {
-    onNavigate?: (path: string) => void;
-}
-
-const Dashboard = ({ onNavigate }: DashboardProps) => {
+const Dashboard = () => {
     const stats = [
         { title: 'Total Usuarios', value: '245', color: '#1976d2' },
         { title: 'Usuarios Activos', value: '198', color: '#388e3c' },
         { title: 'Permisos', value: '12', color: '#f57c00' },
         { title: 'Sesiones Activas', value: '42', color: '#7b1fa2' },
     ];
-
-    const handleNavigate = (path: string) => {
-        onNavigate?.(path);
-    };
 
     const handleLogout = () => {
         console.log('Logout desde Dashboard');
@@ -35,9 +27,6 @@ const Dashboard = ({ onNavigate }: DashboardProps) => {
 
     return (
         <DashboardLayout
-            userName="Juan García"
-            userRole="admin"
-            onNavigate={handleNavigate}
             onLogout={handleLogout}
             onProfileClick={handleProfileClick}
             onSettingsClick={handleSettingsClick}

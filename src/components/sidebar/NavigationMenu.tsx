@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import {
     List,
     ListItem,
@@ -15,21 +16,20 @@ interface MenuItem {
     roles: string[];
 }
 interface NavigationMenuProps {
-
     menuItems: MenuItem[],
-    onNavigate: (path: string) => void;
     onClose: () => void;
     userRole?: string;
 }
 
-export const NavigationMenu = ({ menuItems, onNavigate, onClose, userRole }: NavigationMenuProps) => {
+export const NavigationMenu = ({ menuItems, onClose, userRole }: NavigationMenuProps) => {
+    const navigate = useNavigate();
 
     const filteredItems = menuItems.filter((item) =>
         item.roles.includes(userRole || 'viewer')
     );
 
     const handleNavigation = (path: string) => {
-        onNavigate(path);
+        navigate(path);
         onClose();
     };
     return (
@@ -43,13 +43,14 @@ export const NavigationMenu = ({ menuItems, onNavigate, onClose, userRole }: Nav
                             sx={{
                                 mx: 1,
                                 borderRadius: 1,
+                                color: '#ffffff',
                                 '&:hover': {
-                                    backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                                    backgroundColor: '#ff9800',
                                 },
                             }}
                         >
-                            <ListItemIcon sx={{ minWidth: 40 }}>
-                                <Icon sx={{ color: '#1976d2' }} />
+                            <ListItemIcon sx={{ minWidth: 40, color: '#ffffff' }}>
+                                <Icon />
                             </ListItemIcon>
                             <ListItemText
                                 primary={item.label}
@@ -57,6 +58,7 @@ export const NavigationMenu = ({ menuItems, onNavigate, onClose, userRole }: Nav
                                     '& .MuiListItemText-primary': {
                                         fontSize: '0.95rem',
                                         fontWeight: 500,
+                                        color: '#ffffff',
                                     },
                                 }}
                             />

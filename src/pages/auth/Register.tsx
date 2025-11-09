@@ -2,60 +2,59 @@ import React, { useState } from 'react';
 import {
     Box,
     TextField,
-    Button,
     Typography,
-    Link,
     Alert,
-    CircularProgress,
     InputAdornment,
-    IconButton,
 } from '@mui/material';
 import {
-    Email as EmailIcon,
-    Visibility as VisibilityIcon,
-    VisibilityOff as VisibilityOffIcon,
     Person as PersonIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { AuthLayout } from '../../layouts/AuthLayout';
 import { AuthHeader } from '../../components/auth/AuthHeader';
 import { AuthButton, EmailField, LinkForm, PasswordField } from '../../components/auth/form';
+import { useAuthStore } from '../../store';
 
 const Register = () => {
+    const navigate = useNavigate();
+    const { login, isLoading, error, clearError } = useAuthStore();
+
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [localError, setLocalError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        clearError();
+        setLocalError('');
+
+        if (!name || !email || !password || !confirmPassword) {
+            setLocalError('Por favor completa todos los campos');
+            return;
+        }
 
         if (password !== confirmPassword) {
-            setError('Las contraseñas no coinciden');
+            setLocalError('Las contraseñas no coinciden');
             return;
         }
 
         if (password.length < 6) {
-            setError('La contraseña debe tener al menos 6 caracteres');
+            setLocalError('La contraseña debe tener al menos 6 caracteres');
             return;
         }
 
-        setIsLoading(true);
-
         try {
-            // TODO: Integrar con API
-            console.log('Registro con:', { name, email, password });
-            // Simular delay
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // Registrar y auto-login
+            await login(name, email, 'viewer');
+            // Navegar al dashboard
+            navigate('/dashboard');
         } catch (err) {
-            setError('Error al registrarse. Por favor intenta nuevamente.');
-            console.error(err);
-        } finally {
-            setIsLoading(false);
+            const errorMessage = err instanceof Error ? err.message : 'Error al registrarse';
+            setLocalError(errorMessage);
         }
     };
 
@@ -66,6 +65,8 @@ const Register = () => {
     const handleClickShowConfirmPassword = () => {
         setShowConfirmPassword(!showConfirmPassword);
     };
+
+    const displayError = localError || error;
 
     return (
         <AuthLayout>
@@ -78,7 +79,7 @@ const Register = () => {
 
 
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                {displayError && <Alert severity="error" sx={{ mb: 2 }}>{displayError}</Alert>}
 
                 {/* Nombre Field */}
                 <Box sx={{ mb: 2 }}>

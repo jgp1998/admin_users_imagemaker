@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import {
     List,
     ListItem,
@@ -8,26 +9,38 @@ import {
 import {
     Logout as LogoutIcon,
 } from '@mui/icons-material';
+import { useAuthStore } from '../../store';
+
 interface LogoutButtonProps {
     onLogout: () => void;
 }
+
 export const LogoutButton = ({ onLogout }: LogoutButtonProps) => {
+    const navigate = useNavigate();
+    const { logout } = useAuthStore();
+
+    const handleLogout = () => {
+        logout(); // Actualizar store
+        onLogout();
+        navigate('/login');
+    };
+
     return (
         <List sx={{ pt: 1 }}>
             <ListItem disablePadding>
                 <ListItemButton
-                    onClick={onLogout}
+                    onClick={handleLogout}
                     sx={{
                         mx: 1,
                         borderRadius: 1,
-                        color: '#d32f2f',
+                        color: '#ffffff',
                         '&:hover': {
-                            backgroundColor: 'rgba(211, 47, 47, 0.1)',
+                            backgroundColor: '#ff9800',
                         },
                     }}
                 >
-                    <ListItemIcon sx={{ minWidth: 40 }}>
-                        <LogoutIcon sx={{ color: '#d32f2f' }} />
+                    <ListItemIcon sx={{ minWidth: 40, color: '#ffffff' }}>
+                        <LogoutIcon />
                     </ListItemIcon>
                     <ListItemText
                         primary="Cerrar sesión"
@@ -35,6 +48,7 @@ export const LogoutButton = ({ onLogout }: LogoutButtonProps) => {
                             '& .MuiListItemText-primary': {
                                 fontSize: '0.95rem',
                                 fontWeight: 500,
+                                color: '#ffffff',
                             },
                         }}
                     />

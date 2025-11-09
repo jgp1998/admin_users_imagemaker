@@ -13,20 +13,20 @@ import {
   Menu as MenuIcon,
   Notifications as NotificationsIcon,
 } from '@mui/icons-material';
+import { useAuthStore } from '../../store';
 
 interface HeaderProps {
   onMenuToggle: () => void;
-  userName?: string;
   onProfileClick?: () => void;
   onSettingsClick?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onMenuToggle,
-  userName = 'Usuario',
   onProfileClick,
   onSettingsClick,
 }) => {
+  const { userName } = useAuthStore();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {

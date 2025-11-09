@@ -15,13 +15,13 @@ export const SidebarHeader = ({ title, subtitle }: SidebarHeaderProps) => {
                 variant="h6"
                 sx={{
                     fontWeight: 'bold',
-                    color: '#1976d2',
+                    color: '#ffffff',
                     mb: 1,
                 }}
             >
                 {title}
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 {subtitle}
             </Typography>
         </Box>

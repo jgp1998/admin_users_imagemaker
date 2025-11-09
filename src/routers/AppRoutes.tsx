@@ -3,29 +3,16 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
 import { RoleProtectedRoute } from './RoleProtectedRoute';
-import type { UserRole } from '../types';
 import { Login, Register, Dashboard, NotFound, Unauthorized } from '../pages';
-
-interface AppRoutesProps {
-  isAuthenticated: boolean;
-  isLoading?: boolean;
-  userRole?: UserRole;
-  onNavigate?: (path: string) => void;
-}
+import { UsersPage } from '../pages/UsersPage';
+import { useAuthStore } from '../store';
 
 /**
  * Componente que define todas las rutas de la aplicación
  * Maneja autenticación, roles y rutas privadas/públicas
  */
-export const AppRoutes: React.FC<AppRoutesProps> = ({
-  isAuthenticated,
-  isLoading = false,
-  userRole = 'viewer',
-  onNavigate,
-}) => {
-  const handleNavigate = (path: string) => {
-    onNavigate?.(path);
-  };
+export const AppRoutes: React.FC = () => {
+  const { isAuthenticated, isLoading, userRole } = useAuthStore();
 
   return (
     <BrowserRouter>
@@ -56,7 +43,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
               isAuthenticated={isAuthenticated}
               isLoading={isLoading}
             >
-              <Dashboard onNavigate={handleNavigate} />
+              <Dashboard />
             </PrivateRoute>
           }
         />
@@ -70,7 +57,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                 userRole={userRole}
                 requiredRoles={['admin', 'editor']}
               >
-                <div>Página de Usuarios - Próximamente</div>
+                <UsersPage />
               </RoleProtectedRoute>
             </PrivateRoute>
           }

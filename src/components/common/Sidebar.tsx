@@ -16,7 +16,6 @@ import { SidebarHeader } from '../sidebar/SidebarHeader';
 interface SidebarProps {
     open: boolean;
     onClose: () => void;
-    onNavigate: (path: string) => void;
     onLogout: () => void;
     userRole?: string;
 }
@@ -53,7 +52,6 @@ const menuItems = [
 export const Sidebar = ({
     open,
     onClose,
-    onNavigate,
     onLogout,
     userRole = 'viewer',
 }: SidebarProps) => {
@@ -62,17 +60,16 @@ export const Sidebar = ({
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {/* Header */}
             <SidebarHeader title="ImageMaker" subtitle="Admin Panel" />
-            <Divider />
+            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
 
             {/* Navigation Menu */}
             <NavigationMenu
                 menuItems={menuItems}
-                onNavigate={onNavigate}
                 onClose={onClose}
                 userRole={userRole}
             />
 
-            <Divider />
+            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
 
             {/* Logout Button */}
             <LogoutButton onLogout={onLogout} />
@@ -89,7 +86,7 @@ export const Sidebar = ({
                 sx={{
                     display: { xs: 'block', sm: 'block', md: 'none' },
                     '& .MuiDrawer-paper': {
-                        backgroundColor: '#ffffff',
+                        background: 'linear-gradient(180deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
                         borderRight: '1px solid #e0e0e0',
                     },
                 }}
@@ -108,7 +105,7 @@ export const Sidebar = ({
                     '& .MuiDrawer-paper': {
                         width: DRAWER_WIDTH,
                         boxSizing: 'border-box',
-                        backgroundColor: '#ffffff',
+                        background: 'linear-gradient(180deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
                         borderRight: '1px solid #e0e0e0',
                         mt: 0,
                         pt: 0,
