@@ -35,7 +35,7 @@ export const LogoutButton = ({ onLogout }: LogoutButtonProps) => {
                         borderRadius: 1,
                         color: '#ffffff',
                         '&:hover': {
-                            backgroundColor: '#ff9800',
+                            background: 'linear-gradient(90deg, #ff9800 0%, #ffb74d 100%)',
                         },
                     }}
                 >
