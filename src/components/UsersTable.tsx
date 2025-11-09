@@ -1,4 +1,4 @@
-import  { useEffect } from 'react';
+import  { useEffect, useState } from 'react';
 import {
   Box,
   Paper,
@@ -29,6 +29,7 @@ import { useUsersStore } from '../store';
 import { useAuthStore } from '../store/authStore';
 import { useToast } from '../hooks/useToast';
 import { EditUserModal } from './EditUserModal';
+import { AddUserModal } from './AddUserModal';
 
 // Función para formatear el rol
 const formatRole = (role: string): string => {
@@ -41,6 +42,8 @@ const formatRole = (role: string): string => {
 };
 
 const UsersTable = () => {
+  const [addUserModalOpen, setAddUserModalOpen] = useState(false);
+
   const {
     users,
     isLoading,
@@ -192,7 +195,7 @@ const UsersTable = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => console.log('Agregar nuevo usuario')}
+            onClick={() => setAddUserModalOpen(true)}
             sx={{
               backgroundColor: '#1976d2',
               '&:hover': {
@@ -440,6 +443,12 @@ const UsersTable = () => {
         onSave={handleEditSave}
         isLoading={isEditLoading}
         userRole={userRole}
+      />
+
+      {/* Add User Modal */}
+      <AddUserModal
+        open={addUserModalOpen}
+        onClose={() => setAddUserModalOpen(false)}
       />
     </Box>
   );

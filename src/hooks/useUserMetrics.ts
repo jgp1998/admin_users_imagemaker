@@ -1,5 +1,6 @@
 import { useMemo, useEffect } from 'react';
 import { useUsersStore } from '../store';
+import type { UserDto } from '../types';
 
 interface UserMetrics {
   totalUsers: number;
@@ -13,6 +14,7 @@ interface UserMetrics {
     total: number;
     unique: Set<string>;
   };
+  users: UserDto[];
 }
 
 /**
@@ -67,6 +69,7 @@ export const useUserMetrics = (): UserMetrics => {
         total: allPermissions.size,
         unique: allPermissions,
       },
+      users,
     };
   }, [users]);
 

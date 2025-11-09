@@ -6,37 +6,109 @@ import {
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { useUserMetrics } from '../hooks/useUserMetrics';
 import { useDashboardHandlers } from '../hooks/useDashboardHandlers';
+import { useAuthStore } from '../store';
 
 const Dashboard = () => {
     const metrics = useUserMetrics();
     const { handleLogout, handleProfileClick, handleSettingsClick } = useDashboardHandlers();
+    const { userRole } = useAuthStore();
 
-    const stats = [
+    // Calcular estadísticas filtradas por rol
+    const getFilteredMetrics = () => {
+        if (userRole === 'admin') {
+            // Admin ve todos
+            return {
+                totalCount: metrics.totalUsers,
+                activeCount: metrics.activeUsers,
+                activePercent: metrics.activePercentage,
+                adminCount: metrics.adminCount,
+                vendedorCount: metrics.vendedorCount,
+                usuarioCount: metrics.usuarioCount,
+                title: 'Todos',
+            };
+        } else if (userRole === 'editor') {
+            // Vendedor ve solo vendedores y usuarios (no admin)
+            const vendedorAndUsuario = metrics.vendedorCount + metrics.usuarioCount;
+            const activeVendedorUsuario = metrics.users
+                .filter(u => (u.role === 'editor' || u.role === 'viewer') && u.isActive)
+                .length;
+            const activePercent = vendedorAndUsuario > 0 
+                ? Math.round((activeVendedorUsuario / vendedorAndUsuario) * 100) 
+                : 0;
+            return {
+                totalCount: vendedorAndUsuario,
+                activeCount: activeVendedorUsuario,
+                activePercent,
+                adminCount: 0,
+                vendedorCount: metrics.vendedorCount,
+                usuarioCount: metrics.usuarioCount,
+                title: 'Vendedores y Usuarios',
+            };
+        } else {
+            // Usuario ve solo usuarios
+            const usuarioCount = metrics.usuarioCount;
+            const activeUsuarios = metrics.users
+                .filter(u => u.role === 'viewer' && u.isActive)
+                .length;
+            const activePercent = usuarioCount > 0 
+                ? Math.round((activeUsuarios / usuarioCount) * 100) 
+                : 0;
+            return {
+                totalCount: usuarioCount,
+                activeCount: activeUsuarios,
+                activePercent,
+                adminCount: 0,
+                vendedorCount: 0,
+                usuarioCount: usuarioCount,
+                title: 'Usuarios',
+            };
+        }
+    };
+
+    const filteredMetrics = getFilteredMetrics();
+
+    // Definir qué tarjetas puede ver cada rol
+    const allStats = [
         { 
-            title: 'Total Usuarios', 
-            value: metrics.totalUsers.toString(), 
+            title: `Total ${filteredMetrics.title}`, 
+            value: filteredMetrics.totalCount.toString(), 
             color: '#1976d2',
-            subtitle: `${metrics.activeUsers} activos` 
+            subtitle: `${filteredMetrics.activeCount} activos`,
+            roles: ['admin', 'editor', 'viewer']
         },
         { 
-            title: 'Usuarios Activos', 
-            value: `${metrics.activePercentage}%`, 
+            title: `${filteredMetrics.title} Activos`, 
+            value: `${filteredMetrics.activePercent}%`, 
             color: '#388e3c',
-            subtitle: `${metrics.activeUsers}/${metrics.totalUsers}` 
+            subtitle: `${filteredMetrics.activeCount}/${filteredMetrics.totalCount}`,
+            roles: ['admin', 'editor', 'viewer']
         },
         { 
             title: 'Permisos Únicos', 
             value: metrics.permissions.total.toString(), 
             color: '#f57c00',
-            subtitle: 'Permisos en el sistema'
+            subtitle: 'Permisos en el sistema',
+            roles: ['admin']
         },
         { 
-            title: 'Administradores', 
-            value: metrics.adminCount.toString(), 
+            title: 'Detalles por Rol', 
+            value: userRole === 'admin'
+                ? `${filteredMetrics.adminCount}A - ${filteredMetrics.vendedorCount}V - ${filteredMetrics.usuarioCount}U`
+                : userRole === 'editor'
+                ? `${filteredMetrics.vendedorCount}V - ${filteredMetrics.usuarioCount}U`
+                : filteredMetrics.usuarioCount.toString(),
             color: '#7b1fa2',
-            subtitle: `${metrics.vendedorCount} Vendedores, ${metrics.usuarioCount} Usuarios` 
+            subtitle: userRole === 'admin' 
+                ? `${filteredMetrics.adminCount} Admins, ${filteredMetrics.vendedorCount} Vendedores, ${filteredMetrics.usuarioCount} Usuarios`
+                : userRole === 'editor'
+                ? `${filteredMetrics.vendedorCount} Vendedores, ${filteredMetrics.usuarioCount} Usuarios`
+                : `${filteredMetrics.usuarioCount} Usuarios`,
+            roles: ['admin', 'editor', 'viewer']
         },
     ];
+
+    // Filtrar tarjetas según el rol del usuario
+    const stats = allStats.filter(stat => stat.roles.includes(userRole || 'viewer'));
 
     return (
         <DashboardLayout

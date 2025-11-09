@@ -58,8 +58,8 @@ export const usersApi = {
   getUsers: async (params?: UsersListRequest): Promise<UsersListResponse> => {
     const { data } = await apiClient.get<UsersListResponse>('/users', {
       params: {
-        page: params?.page || 0,
-        limit: params?.limit || 15,
+        page: params?.page ?? 0,
+        limit: params?.limit ?? 50,
       },
     });
     return data;
@@ -100,12 +100,12 @@ export const usersApi = {
   /**
    * Buscar usuarios
    */
-  searchUsers: async (query: string, page?: number): Promise<UsersListResponse> => {
+  searchUsers: async (query: string, page?: number, limit: number = 50): Promise<UsersListResponse> => {
     const { data } = await apiClient.get<UsersListResponse>('/users', {
       params: {
         search: query,
         page: page || 0,
-        limit: 15,
+        limit,
       },
     });
     return data;

@@ -2,6 +2,16 @@ import { create } from 'zustand';
 import type { UserDto } from '../types';
 import { usersApi } from '../api';
 
+interface CreateUserInput {
+  name: string;
+  email: string;
+  password: string;
+  rol: string;
+  state: boolean;
+  img?: string;
+  google?: boolean;
+}
+
 interface UsersState {
   users: UserDto[];
   isLoading: boolean;
@@ -23,7 +33,7 @@ interface UsersState {
   
   // Acciones
   fetchUsers: () => Promise<void>;
-  addUser: (user: Omit<UserDto, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addUser: (user: CreateUserInput) => Promise<void>;
   updateUser: (id: string, user: Partial<UserDto>) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
   invalidateCache: () => void;
@@ -120,23 +130,46 @@ export const useUsersStore = create<UsersState>((set) => ({
   },
 
   // Agregar usuario
-  addUser: async (user) => {
+  addUser: async (user: CreateUserInput) => {
     try {
       set({ isLoading: true, error: null });
+
+      // Mapeo de roles: Frontend → API
+      const appRoleToApiRole: Record<string, string> = {
+        'admin': 'ADMIN_ROLE',
+        'editor': 'SALES_ROLE',
+        'viewer': 'USER_ROLE',
+      };
+
+      // Si viene con rol de API (ADMIN_ROLE, SALES_ROLE, USER_ROLE), usarlo directamente
+      // Si viene con rol de app (admin, editor, viewer), convertir a API
+      const apiRol = user.rol?.includes('_ROLE') 
+        ? user.rol 
+        : (appRoleToApiRole[user.rol] || 'USER_ROLE');
+
       const response = await usersApi.createUser({
         name: user.name,
         email: user.email,
-        password: 'temp123',
-        rol: 'USER_ROLE',
-        state: user.isActive,
+        password: user.password,
+        rol: apiRol,
+        state: user.state !== false,
+        img: user.img || '',
+        google: user.google || false,
       });
       
+      // Mapeo inverso: API → Frontend
+      const apiRoleToAppRole: Record<string, string> = {
+        'ADMIN_ROLE': 'admin',
+        'SALES_ROLE': 'editor',
+        'USER_ROLE': 'viewer',
+      };
+
       const newUser: UserDto = {
         id: response.user.uid,
         name: response.user.name,
         email: response.user.email,
-        role: 'viewer',
-        isActive: true,
+        role: (apiRoleToAppRole[response.user.rol] || 'viewer') as any,
+        isActive: response.user.state !== false,
         claims: response.user.permissions || [],
         createdAt: new Date().toISOString().split('T')[0],
         updatedAt: new Date().toISOString().split('T')[0],
