@@ -17,7 +17,7 @@ import {
   Chip,
   Typography,
 } from '@mui/material';
-import type { UserDto } from '../types';
+import type { UserDto, UserRole } from '../types';
 
 interface EditUserModalProps {
   open: boolean;
@@ -25,6 +25,7 @@ interface EditUserModalProps {
   onClose: () => void;
   onSave: (user: Partial<UserDto>) => Promise<void>;
   isLoading?: boolean;
+  userRole?: UserRole;
 }
 
 export const EditUserModal: React.FC<EditUserModalProps> = ({
@@ -33,6 +34,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   onClose,
   onSave,
   isLoading = false,
+  userRole = 'viewer',
 }) => {
   const [formData, setFormData] = useState<Partial<UserDto>>({
     name: '',
@@ -42,6 +44,10 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Permisos basados en rol
+  const canEditRole = userRole === 'admin';
+  const canEditStatus = userRole === 'admin';
 
   // Cargar datos del usuario cuando se abre el modal
   useEffect(() => {
@@ -141,7 +147,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
           />
 
           {/* Rol */}
-          <FormControl fullWidth error={!!errors.role} disabled={isLoading}>
+          <FormControl fullWidth error={!!errors.role} disabled={isLoading || !canEditRole}>
             <InputLabel>Rol</InputLabel>
             <Select
               name="role"
@@ -163,6 +169,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             p: 1.5,
             border: '1px solid #e0e0e0',
             borderRadius: 1,
+            opacity: canEditStatus ? 1 : 0.6,
           }}>
             <Typography sx={{ fontWeight: 500 }}>Estado del usuario</Typography>
             <FormControlLabel
@@ -170,7 +177,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 <Switch
                   checked={formData.isActive || false}
                   onChange={handleToggleActive}
-                  disabled={isLoading}
+                  disabled={isLoading || !canEditStatus}
                 />
               }
               label={formData.isActive ? 'Activo' : 'Inactivo'}

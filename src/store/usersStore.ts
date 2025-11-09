@@ -9,103 +9,44 @@ interface UsersState {
   searchTerm: string;
   currentPage: number;
   rowsPerPage: number;
+  hasLoaded: boolean;
+  
+  // Estados del Modal de Edición
+  editModalOpen: boolean;
+  selectedUser: UserDto | null;
+  isEditLoading: boolean;
+  
+  // Estados del Diálogo de Eliminación
+  deleteDialogOpen: boolean;
+  selectedUserId: string | null;
+  selectedUserName: string | null;
   
   // Acciones
   fetchUsers: () => Promise<void>;
   addUser: (user: Omit<UserDto, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateUser: (id: string, user: Partial<UserDto>) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
+  invalidateCache: () => void;
   setSearchTerm: (term: string) => void;
   setCurrentPage: (page: number) => void;
   setRowsPerPage: (rows: number) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
+  setHasLoaded: (loaded: boolean) => void;
+  
+  // Acciones del Modal de Edición
+  openEditModal: (user: UserDto) => void;
+  closeEditModal: () => void;
+  setEditLoading: (loading: boolean) => void;
+  
+  // Acciones del Diálogo de Eliminación
+  openDeleteDialog: (userId: string, userName: string) => void;
+  closeDeleteDialog: () => void;
 }
 
-// Datos iniciales para testing
-const INITIAL_USERS: UserDto[] = [
-  {
-    id: '1',
-    name: 'Juan García',
-    email: 'juan@example.com',
-    role: 'admin',
-    isActive: true,
-    claims: ['view', 'edit', 'delete'],
-    createdAt: '2024-01-15',
-    updatedAt: '2024-11-08',
-  },
-  {
-    id: '2',
-    name: 'María López',
-    email: 'maria@example.com',
-    role: 'editor',
-    isActive: true,
-    claims: ['view', 'edit'],
-    createdAt: '2024-01-20',
-    updatedAt: '2024-11-08',
-  },
-  {
-    id: '3',
-    name: 'Carlos Rodríguez',
-    email: 'carlos@example.com',
-    role: 'viewer',
-    isActive: false,
-    claims: ['view'],
-    createdAt: '2024-02-10',
-    updatedAt: '2024-11-08',
-  },
-  {
-    id: '4',
-    name: 'Ana Martínez',
-    email: 'ana@example.com',
-    role: 'editor',
-    isActive: true,
-    claims: ['view', 'edit'],
-    createdAt: '2024-02-15',
-    updatedAt: '2024-11-08',
-  },
-  {
-    id: '5',
-    name: 'Pedro Sánchez',
-    email: 'pedro@example.com',
-    role: 'admin',
-    isActive: true,
-    claims: ['view', 'edit', 'delete'],
-    createdAt: '2024-03-01',
-    updatedAt: '2024-11-08',
-  },
-  {
-    id: '6',
-    name: 'Laura Fernández',
-    email: 'laura@example.com',
-    role: 'viewer',
-    isActive: true,
-    claims: ['view'],
-    createdAt: '2024-03-10',
-    updatedAt: '2024-11-08',
-  },
-  {
-    id: '7',
-    name: 'Diego Gómez',
-    email: 'diego@example.com',
-    role: 'editor',
-    isActive: true,
-    claims: ['view', 'edit'],
-    createdAt: '2024-03-20',
-    updatedAt: '2024-11-08',
-  },
-  {
-    id: '8',
-    name: 'Sofia Ruiz',
-    email: 'sofia@example.com',
-    role: 'viewer',
-    isActive: false,
-    claims: ['view'],
-    createdAt: '2024-04-01',
-    updatedAt: '2024-11-08',
-  },
-];
+// Datos iniciales vacíos (se cargarán desde la API)
+const INITIAL_USERS: UserDto[] = [];
 
 export const useUsersStore = create<UsersState>((set) => ({
   // Estado inicial
@@ -115,32 +56,63 @@ export const useUsersStore = create<UsersState>((set) => ({
   searchTerm: '',
   currentPage: 0,
   rowsPerPage: 5,
+  hasLoaded: false,
+  editModalOpen: false,
+  selectedUser: null,
+  isEditLoading: false,
+  deleteDialogOpen: false,
+  selectedUserId: null,
+  selectedUserName: null,
 
-  // Obtener usuarios
+  // Obtener usuarios (con paginación automática)
   fetchUsers: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await usersApi.getUsers({ page: 0, limit: 15 });
+      
+      const allUsers: UserDto[] = [];
+      let page = 0;
+      let hasMore = true;
+      const pageSize = 50; // Obtener 50 usuarios por página
       
       // Mapeo inverso: API → Frontend
       const apiRoleToAppRole: Record<string, string> = {
         'ADMIN_ROLE': 'admin',
-        'USER_ROLE': 'editor',
-        'SALES_ROLE': 'viewer',
+        'SALES_ROLE': 'editor',
+        'USER_ROLE': 'viewer',
       };
       
-      // Convertir respuesta de API a nuestro tipo
-      const users: UserDto[] = response.users.map((user) => ({
-        id: user.uid,
-        name: user.name,
-        email: user.email,
-        role: (apiRoleToAppRole[user.rol] || 'viewer') as any,
-        isActive: user.state !== false,
-        claims: user.permissions || [],
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0],
-      }));
-      set({ users, isLoading: false });
+      // Obtener todos los usuarios página por página
+      while (hasMore) {
+        const response = await usersApi.getUsers({ page, limit: pageSize });
+        
+        if (response.users.length === 0) {
+          hasMore = false;
+          break;
+        }
+        
+        // Convertir respuesta de API a nuestro tipo
+        const users: UserDto[] = response.users.map((user) => ({
+          id: user.uid,
+          name: user.name,
+          email: user.email,
+          role: (apiRoleToAppRole[user.rol] || 'viewer') as any,
+          isActive: user.state !== false,
+          claims: user.permissions || [],
+          createdAt: new Date().toISOString().split('T')[0],
+          updatedAt: new Date().toISOString().split('T')[0],
+        }));
+        
+        allUsers.push(...users);
+        
+        // Si obtuvimos menos usuarios que el pageSize, significa que es la última página
+        if (response.users.length < pageSize) {
+          hasMore = false;
+        }
+        
+        page++;
+      }
+      
+      set({ users: allUsers, isLoading: false });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar usuarios';
       set({ error: errorMessage, isLoading: false });
@@ -189,24 +161,24 @@ export const useUsersStore = create<UsersState>((set) => ({
       // Mapeo: Frontend → API
       const appRoleToApiRole: Record<string, string> = {
         'admin': 'ADMIN_ROLE',
-        'editor': 'USER_ROLE',
-        'viewer': 'SALES_ROLE',
+        'editor': 'SALES_ROLE',
+        'viewer': 'USER_ROLE',
       };
 
       // Mapear datos del frontend al formato de la API
       const apiUpdateData: any = {
         name: updatedData.name,
         email: updatedData.email,
+        state: updatedData.isActive !== undefined ? updatedData.isActive : true,
       };
 
       // Mapear role a rol y convertir formato
       if (updatedData.role) {
-        apiUpdateData.rol = appRoleToApiRole[updatedData.role] || 'USER_ROLE';
-      }
-
-      // Mapear isActive a state
-      if (updatedData.isActive !== undefined) {
-        apiUpdateData.state = updatedData.isActive;
+        const mappedRole = appRoleToApiRole[updatedData.role];
+        if (!mappedRole) {
+          throw new Error(`Rol inválido: ${updatedData.role}`);
+        }
+        apiUpdateData.rol = mappedRole;
       }
 
       await usersApi.updateUser(id, apiUpdateData);
@@ -230,18 +202,24 @@ export const useUsersStore = create<UsersState>((set) => ({
     }
   },
 
-  // Eliminar usuario
+  // Eliminar usuario (cambiar estado a inactivo)
   deleteUser: async (id) => {
     try {
       set({ isLoading: true, error: null });
+      
+      // Usar el endpoint DELETE que solo requiere el ID en la URL
       await usersApi.deleteUser(id);
       
       set((state) => ({
-        users: state.users.filter((user) => user.id !== id),
+        users: state.users.map((user) =>
+          user.id === id 
+            ? { ...user, isActive: false }
+            : user
+        ),
         isLoading: false,
       }));
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar usuario';
+      const errorMessage = err instanceof Error ? err.message : 'Error al desactivar usuario';
       set({ error: errorMessage, isLoading: false });
       throw err;
     }
@@ -273,5 +251,37 @@ export const useUsersStore = create<UsersState>((set) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  // Manejo del estado hasLoaded
+  setHasLoaded: (loaded) => {
+    set({ hasLoaded: loaded });
+  },
+
+  // Acciones del Modal de Edición
+  openEditModal: (user) => {
+    set({ editModalOpen: true, selectedUser: user });
+  },
+
+  closeEditModal: () => {
+    set({ editModalOpen: false, selectedUser: null, isEditLoading: false });
+  },
+
+  setEditLoading: (loading) => {
+    set({ isEditLoading: loading });
+  },
+
+  // Acciones del Diálogo de Eliminación
+  openDeleteDialog: (userId, userName) => {
+    set({ deleteDialogOpen: true, selectedUserId: userId, selectedUserName: userName });
+  },
+
+  closeDeleteDialog: () => {
+    set({ deleteDialogOpen: false, selectedUserId: null, selectedUserName: null });
+  },
+
+  // Invalidar cache para forzar recarga de usuarios
+  invalidateCache: () => {
+    set({ hasLoaded: false });
   },
 }));

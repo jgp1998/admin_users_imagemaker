@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Box, Container } from '@mui/material';
 import { Header } from '../components/common/Header';
 import { Sidebar } from '../components/common/Sidebar';
-import { useAuthStore } from '../store';
+import { useSidebar } from '../hooks/useSidebar';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -17,22 +17,7 @@ export const DashboardLayout = ({
     onProfileClick,
     onSettingsClick,
 }: DashboardLayoutProps) => {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { logout, userRole } = useAuthStore();
-
-    const handleMenuToggle = () => {
-        setSidebarOpen(!sidebarOpen);
-    };
-
-    const handleSidebarClose = () => {
-        setSidebarOpen(false);
-    };
-
-    const handleLogout = () => {
-        handleSidebarClose();
-        logout(); // Actualizar store
-        onLogout?.();
-    };
+    const { sidebarOpen, userRole, handleMenuToggle, handleSidebarClose, handleLogout } = useSidebar();
 
     return (
         <Box
@@ -46,7 +31,7 @@ export const DashboardLayout = ({
             <Sidebar
                 open={sidebarOpen}
                 onClose={handleSidebarClose}
-                onLogout={handleLogout}
+                onLogout={() => handleLogout(onLogout)}
                 userRole={userRole}
             />
 

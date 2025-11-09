@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
     Box,
     TextField,
@@ -9,74 +8,29 @@ import {
 import {
     Person as PersonIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import { AuthLayout } from '../../layouts/AuthLayout';
 import { AuthHeader } from '../../components/auth/AuthHeader';
 import { AuthButton, EmailField, LinkForm, PasswordField } from '../../components/auth/form';
-import { useAuthStore } from '../../store';
-import { useToast } from '../../hooks/useToast';
+import { useRegisterForm } from '../../hooks/useRegisterForm';
 
 const Register = () => {
-    const navigate = useNavigate();
-    const { register, isLoading, error, clearError } = useAuthStore();
-    const { success, error: showError } = useToast();
-
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [localError, setLocalError] = useState('');
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        clearError();
-        setLocalError('');
-
-        if (!name || !email || !password || !confirmPassword) {
-            const msg = 'Por favor completa todos los campos';
-            setLocalError(msg);
-            showError(msg);
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            const msg = 'Las contraseñas no coinciden';
-            setLocalError(msg);
-            showError(msg);
-            return;
-        }
-
-        if (password.length < 6) {
-            const msg = 'La contraseña debe tener al menos 6 caracteres';
-            setLocalError(msg);
-            showError(msg);
-            return;
-        }
-
-        try {
-            // Registrar usuario
-            await register(name, email, password);
-            success('¡Cuenta creada exitosamente! Bienvenido al panel');
-            // Navegar al dashboard
-            navigate('/dashboard');
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Error al registrarse';
-            setLocalError(errorMessage);
-            showError(errorMessage);
-        }
-    };
-
-    const handleClickShowPassword = () => {
-        setShowPassword(!showPassword);
-    };
-
-    const handleClickShowConfirmPassword = () => {
-        setShowConfirmPassword(!showConfirmPassword);
-    };
-
-    const displayError = localError || error;
+    const {
+        name,
+        email,
+        password,
+        confirmPassword,
+        showPassword,
+        showConfirmPassword,
+        isLoading,
+        displayError,
+        setName,
+        setEmail,
+        setPassword,
+        setConfirmPassword,
+        handleClickShowPassword,
+        handleClickShowConfirmPassword,
+        handleSubmit,
+    } = useRegisterForm();
 
     return (
         <AuthLayout>

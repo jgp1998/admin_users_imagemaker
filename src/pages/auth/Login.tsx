@@ -1,58 +1,26 @@
-import React, { useState } from 'react'
 import {
     Box,
     Alert,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 
 import { AuthHeader } from '../../components/auth/AuthHeader';
 import { AuthLayout } from '../../layouts/AuthLayout';
 import { EmailField, PasswordField, AuthButton, LinkForm } from '../../components/auth/form/';
-import { useAuthStore } from '../../store';
-import { useToast } from '../../hooks/useToast';
+import { useLoginForm } from '../../hooks/useLoginForm';
 
 
 const Login = () => {
-    const navigate = useNavigate();
-    const { login, isLoading, error, clearError } = useAuthStore();
-    const { success, error: showError } = useToast();
-
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [localError, setLocalError] = useState('');
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        clearError();
-        setLocalError('');
-
-        // Validaciones básicas
-        if (!email || !password) {
-            const msg = 'Por favor completa todos los campos';
-            setLocalError(msg);
-            showError(msg);
-            return;
-        }
-
-        try {
-            // Llamar al store para login con email y password
-            await login(email, password);
-            success('¡Bienvenido al panel de administración!');
-            // Navegar al dashboard
-            navigate('/dashboard');
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
-            setLocalError(errorMessage);
-            showError(errorMessage);
-        }
-    };
-
-    const handleClickShowPassword = () => {
-        setShowPassword(!showPassword);
-    };
-
-    const displayError = localError || error;
+    const {
+        email,
+        password,
+        showPassword,
+        isLoading,
+        displayError,
+        setEmail,
+        setPassword,
+        handleClickShowPassword,
+        handleSubmit,
+    } = useLoginForm();
 
     return (
         <AuthLayout>

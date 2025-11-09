@@ -10,6 +10,23 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   
+  // Estado del formulario de Login
+  loginForm: {
+    email: string;
+    password: string;
+    showPassword: boolean;
+  };
+  
+  // Estado del formulario de Registro
+  registerForm: {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    showPassword: boolean;
+    showConfirmPassword: boolean;
+  };
+  
   // Acciones
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
@@ -17,6 +34,24 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
+  
+  // Acciones para formulario de Login
+  setLoginFormEmail: (email: string) => void;
+  setLoginFormPassword: (password: string) => void;
+  setLoginFormShowPassword: (show: boolean) => void;
+  toggleLoginFormShowPassword: () => void;
+  resetLoginForm: () => void;
+  
+  // Acciones para formulario de Registro
+  setRegisterFormName: (name: string) => void;
+  setRegisterFormEmail: (email: string) => void;
+  setRegisterFormPassword: (password: string) => void;
+  setRegisterFormConfirmPassword: (password: string) => void;
+  setRegisterFormShowPassword: (show: boolean) => void;
+  setRegisterFormShowConfirmPassword: (show: boolean) => void;
+  toggleRegisterFormShowPassword: () => void;
+  toggleRegisterFormShowConfirmPassword: () => void;
+  resetRegisterForm: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -27,6 +62,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   userEmail: localStorage.getItem('user_email') || '',
   isLoading: false,
   error: null,
+  
+  // Estado inicial del formulario de Login
+  loginForm: {
+    email: '',
+    password: '',
+    showPassword: false,
+  },
+  
+  // Estado inicial del formulario de Registro
+  registerForm: {
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    showPassword: false,
+    showConfirmPassword: false,
+  },
 
   // Login
   login: async (email, password) => {
@@ -39,9 +91,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Convertir rol de API a nuestro tipo
       const roleMap: Record<string, UserRole> = {
         'ADMIN_ROLE': 'admin',
+        'SALES_ROLE': 'editor',
         'EDITOR_ROLE': 'editor',
         'USER_ROLE': 'viewer',
-        'SALES_ROLE': 'viewer',
       };
       
       const userRole = roleMap[response.user.rol] || 'viewer';
@@ -76,9 +128,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Convertir rol de API a nuestro tipo
       const roleMap: Record<string, UserRole> = {
         'ADMIN_ROLE': 'admin',
+        'SALES_ROLE': 'editor',
         'EDITOR_ROLE': 'editor',
         'USER_ROLE': 'viewer',
-        'SALES_ROLE': 'viewer',
       };
       
       const userRole = roleMap[response.user.rol] || 'viewer';
@@ -131,4 +183,87 @@ export const useAuthStore = create<AuthState>((set) => ({
   // Limpiar error
   clearError: () =>
     set({ error: null }),
+  
+  // Acciones para formulario de Login
+  setLoginFormEmail: (email) =>
+    set((state) => ({
+      loginForm: { ...state.loginForm, email },
+    })),
+
+  setLoginFormPassword: (password) =>
+    set((state) => ({
+      loginForm: { ...state.loginForm, password },
+    })),
+
+  setLoginFormShowPassword: (show) =>
+    set((state) => ({
+      loginForm: { ...state.loginForm, showPassword: show },
+    })),
+
+  toggleLoginFormShowPassword: () =>
+    set((state) => ({
+      loginForm: { ...state.loginForm, showPassword: !state.loginForm.showPassword },
+    })),
+
+  resetLoginForm: () =>
+    set({
+      loginForm: {
+        email: '',
+        password: '',
+        showPassword: false,
+      },
+    }),
+  
+  // Acciones para formulario de Registro
+  setRegisterFormName: (name) =>
+    set((state) => ({
+      registerForm: { ...state.registerForm, name },
+    })),
+
+  setRegisterFormEmail: (email) =>
+    set((state) => ({
+      registerForm: { ...state.registerForm, email },
+    })),
+
+  setRegisterFormPassword: (password) =>
+    set((state) => ({
+      registerForm: { ...state.registerForm, password },
+    })),
+
+  setRegisterFormConfirmPassword: (confirmPassword) =>
+    set((state) => ({
+      registerForm: { ...state.registerForm, confirmPassword },
+    })),
+
+  setRegisterFormShowPassword: (show) =>
+    set((state) => ({
+      registerForm: { ...state.registerForm, showPassword: show },
+    })),
+
+  setRegisterFormShowConfirmPassword: (show) =>
+    set((state) => ({
+      registerForm: { ...state.registerForm, showConfirmPassword: show },
+    })),
+
+  toggleRegisterFormShowPassword: () =>
+    set((state) => ({
+      registerForm: { ...state.registerForm, showPassword: !state.registerForm.showPassword },
+    })),
+
+  toggleRegisterFormShowConfirmPassword: () =>
+    set((state) => ({
+      registerForm: { ...state.registerForm, showConfirmPassword: !state.registerForm.showConfirmPassword },
+    })),
+
+  resetRegisterForm: () =>
+    set({
+      registerForm: {
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        showPassword: false,
+        showConfirmPassword: false,
+      },
+    }),
 }));

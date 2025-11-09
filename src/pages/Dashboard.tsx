@@ -1,35 +1,42 @@
-import { useNavigate } from 'react-router-dom';
 import {
     Box,
     Typography,
     Card,
 } from '@mui/material';
 import { DashboardLayout } from '../layouts/DashboardLayout';
-import { useAuthStore } from '../store';
+import { useUserMetrics } from '../hooks/useUserMetrics';
+import { useDashboardHandlers } from '../hooks/useDashboardHandlers';
 
 const Dashboard = () => {
-    const navigate = useNavigate();
-    const { logout } = useAuthStore();
+    const metrics = useUserMetrics();
+    const { handleLogout, handleProfileClick, handleSettingsClick } = useDashboardHandlers();
 
     const stats = [
-        { title: 'Total Usuarios', value: '245', color: '#1976d2' },
-        { title: 'Usuarios Activos', value: '198', color: '#388e3c' },
-        { title: 'Permisos', value: '12', color: '#f57c00' },
-        { title: 'Sesiones Activas', value: '42', color: '#7b1fa2' },
+        { 
+            title: 'Total Usuarios', 
+            value: metrics.totalUsers.toString(), 
+            color: '#1976d2',
+            subtitle: `${metrics.activeUsers} activos` 
+        },
+        { 
+            title: 'Usuarios Activos', 
+            value: `${metrics.activePercentage}%`, 
+            color: '#388e3c',
+            subtitle: `${metrics.activeUsers}/${metrics.totalUsers}` 
+        },
+        { 
+            title: 'Permisos Únicos', 
+            value: metrics.permissions.total.toString(), 
+            color: '#f57c00',
+            subtitle: 'Permisos en el sistema'
+        },
+        { 
+            title: 'Administradores', 
+            value: metrics.adminCount.toString(), 
+            color: '#7b1fa2',
+            subtitle: `${metrics.vendedorCount} Vendedores, ${metrics.usuarioCount} Usuarios` 
+        },
     ];
-
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
-
-    const handleProfileClick = () => {
-        console.log('Ir a perfil');
-    };
-
-    const handleSettingsClick = () => {
-        console.log('Ir a configuración');
-    };
 
     return (
         <DashboardLayout
@@ -65,20 +72,14 @@ const Dashboard = () => {
                             >
                                 {stat.value}
                             </Typography>
+                            {stat.subtitle && (
+                                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
+                                    {stat.subtitle}
+                                </Typography>
+                            )}
                         </Card>
                     ))}
                 </Box>
-
-                {/* Content Section */}
-                <Card sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                        Bienvenido al Panel de Administración
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                        Selecciona una opción del menú lateral para empezar a gestionar usuarios,
-                        permisos y configuración.
-                    </Typography>
-                </Card>
             </Box>
         </DashboardLayout>
     );

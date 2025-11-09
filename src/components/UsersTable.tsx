@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -26,6 +26,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import { useUsersStore } from '../store';
+import { useAuthStore } from '../store/authStore';
 import { useToast } from '../hooks/useToast';
 import { EditUserModal } from './EditUserModal';
 
@@ -39,20 +40,41 @@ const formatRole = (role: string): string => {
   return roleMap[role] || role;
 };
 
-const UsersTable: React.FC = () => {
-  const { users, isLoading, fetchUsers, deleteUser, updateUser } = useUsersStore();
-  const { success, error: showError } = useToast();
+const UsersTable = () => {
+  const {
+    users,
+    isLoading,
+    fetchUsers,
+    deleteUser,
+    updateUser,
+    searchTerm,
+    setSearchTerm,
+    currentPage,
+    setCurrentPage,
+    rowsPerPage,
+    setRowsPerPage,
+    hasLoaded,
+    setHasLoaded,
+    deleteDialogOpen,
+    selectedUserId,
+    selectedUserName,
+    openDeleteDialog,
+    closeDeleteDialog,
+    editModalOpen,
+    selectedUser,
+    isEditLoading,
+    openEditModal,
+    closeEditModal,
+    setEditLoading,
+  } = useUsersStore();
   
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedUserName, setSelectedUserName] = useState<string | null>(null);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
-  const [isEditLoading, setIsEditLoading] = useState(false);
+  const { userRole } = useAuthStore();
+  const { success, error: showError } = useToast();
+
+  // Permisos basados en rol
+  const canCreate = userRole === 'admin';
+  const canEdit = userRole === 'admin' || userRole === 'editor';
+  const canDelete = userRole === 'admin';
 
   // Cargar usuarios solo una vez al montar el componente
   useEffect(() => {
@@ -70,8 +92,6 @@ const UsersTable: React.FC = () => {
 
     loadUsers();
   }, []); // Sin dependencias para evitar loop infinito
-
-  // Filtrar usuarios por búsqueda
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -79,9 +99,7 @@ const UsersTable: React.FC = () => {
   );
 
   const handleDeleteClick = (userId: string, userName: string) => {
-    setSelectedUserId(userId);
-    setSelectedUserName(userName);
-    setDeleteDialogOpen(true);
+    openDeleteDialog(userId, userName);
   };
 
   const handleDeleteConfirm = async () => {
@@ -89,37 +107,31 @@ const UsersTable: React.FC = () => {
 
     try {
       await deleteUser(selectedUserId);
-      success(`Usuario ${selectedUserName} eliminado exitosamente`);
-      setDeleteDialogOpen(false);
-      setSelectedUserId(null);
-      setSelectedUserName(null);
+      success(`Usuario ${selectedUserName} desactivado exitosamente`);
+      closeDeleteDialog();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar usuario';
+      const errorMessage = err instanceof Error ? err.message : 'Error al desactivar usuario';
       showError(errorMessage);
     }
   };
 
   const handleDeleteCancel = () => {
-    setDeleteDialogOpen(false);
-    setSelectedUserId(null);
+    closeDeleteDialog();
   };
 
   const handleEditClick = (user: any) => {
-    setSelectedUser(user);
-    setEditModalOpen(true);
+    openEditModal(user);
   };
 
   const handleEditClose = () => {
-    setEditModalOpen(false);
-    setSelectedUser(null);
-    setIsEditLoading(false);
+    closeEditModal();
   };
 
   const handleEditSave = async (updatedData: any) => {
     if (!selectedUser) return;
 
     try {
-      setIsEditLoading(true);
+      setEditLoading(true);
       await updateUser(selectedUser.id, updatedData);
       success(`Usuario ${updatedData.name} actualizado exitosamente`);
       handleEditClose();
@@ -127,7 +139,7 @@ const UsersTable: React.FC = () => {
       const errorMessage = err instanceof Error ? err.message : 'Error al actualizar usuario';
       showError(errorMessage);
     } finally {
-      setIsEditLoading(false);
+      setEditLoading(false);
     }
   };
 
@@ -154,8 +166,8 @@ const UsersTable: React.FC = () => {
   };
 
   const paginatedUsers = filteredUsers.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
+    currentPage * rowsPerPage,
+    currentPage * rowsPerPage + rowsPerPage
   );
 
   return (
@@ -176,20 +188,22 @@ const UsersTable: React.FC = () => {
             Lista de usuarios
           </h2>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => console.log('Agregar nuevo usuario')}
-          sx={{
-            backgroundColor: '#1976d2',
-            '&:hover': {
-              backgroundColor: '#1565c0',
-            },
-            fontSize: 'clamp(0.75rem, 2vw, 1rem)',
-          }}
-        >
-          Agregar usuario
-        </Button>
+        {canCreate && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => console.log('Agregar nuevo usuario')}
+            sx={{
+              backgroundColor: '#1976d2',
+              '&:hover': {
+                backgroundColor: '#1565c0',
+              },
+              fontSize: 'clamp(0.75rem, 2vw, 1rem)',
+            }}
+          >
+            Agregar usuario
+          </Button>
+        )}
       </Box>
 
       {/* Search Bar */}
@@ -199,7 +213,7 @@ const UsersTable: React.FC = () => {
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            setPage(0);
+            setCurrentPage(0);
           }}
           fullWidth
           variant="outlined"
@@ -317,24 +331,28 @@ const UsersTable: React.FC = () => {
                 </TableCell>
                 <TableCell sx={{ textAlign: 'center', minWidth: 100 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
-                    <Tooltip title="Editar">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEditClick(user)}
-                        sx={{ color: '#1976d2' }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Eliminar">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteClick(user.id, user.name)}
-                        sx={{ color: '#d32f2f' }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    {canEdit && (
+                      <Tooltip title="Editar">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditClick(user)}
+                          sx={{ color: '#1976d2' }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {canDelete && (
+                      <Tooltip title="Desactivar">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteClick(user.id, user.name)}
+                          sx={{ color: '#d32f2f' }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Box>
                 </TableCell>
               </TableRow>
@@ -353,7 +371,7 @@ const UsersTable: React.FC = () => {
             value={rowsPerPage}
             onChange={(e) => {
               setRowsPerPage(parseInt(e.target.value));
-              setPage(0);
+              setCurrentPage(0);
             }}
             style={{
               padding: '4px 8px',
@@ -370,23 +388,23 @@ const UsersTable: React.FC = () => {
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
           <span>
-            {page * rowsPerPage + 1}-
-            {Math.min((page + 1) * rowsPerPage, filteredUsers.length)} de{' '}
+            {currentPage * rowsPerPage + 1}-
+            {Math.min((currentPage + 1) * rowsPerPage, filteredUsers.length)} de{' '}
             {filteredUsers.length}
           </span>
           <Box>
             <Button
-              disabled={page === 0}
-              onClick={() => setPage(page - 1)}
+              disabled={currentPage === 0}
+              onClick={() => setCurrentPage(currentPage - 1)}
               sx={{ minWidth: 'auto', p: 0.5, fontSize: 'clamp(0.75rem, 2vw, 1rem)' }}
             >
               ‹
             </Button>
             <Button
               disabled={
-                (page + 1) * rowsPerPage >= filteredUsers.length
+                (currentPage + 1) * rowsPerPage >= filteredUsers.length
               }
-              onClick={() => setPage(page + 1)}
+              onClick={() => setCurrentPage(currentPage + 1)}
               sx={{ minWidth: 'auto', p: 0.5, fontSize: 'clamp(0.75rem, 2vw, 1rem)' }}
             >
               ›
@@ -397,10 +415,10 @@ const UsersTable: React.FC = () => {
 
       {/* Delete Dialog */}
       <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
-        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogTitle>Desactivar usuario</DialogTitle>
         <DialogContent>
-          ¿Está seguro de que desea eliminar este usuario? Esta acción no se
-          puede deshacer.
+          ¿Está seguro de que desea desactivar este usuario? El usuario seguirá
+          registrado en el sistema pero no podrá iniciar sesión.
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteCancel}>Cancelar</Button>
@@ -409,7 +427,7 @@ const UsersTable: React.FC = () => {
             color="error"
             variant="contained"
           >
-            Eliminar
+            Desactivar
           </Button>
         </DialogActions>
       </Dialog>
@@ -421,6 +439,7 @@ const UsersTable: React.FC = () => {
         onClose={handleEditClose}
         onSave={handleEditSave}
         isLoading={isEditLoading}
+        userRole={userRole}
       />
     </Box>
   );
