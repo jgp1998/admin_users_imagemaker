@@ -1,7 +1,6 @@
 import {
     Box,
     TextField,
-    Typography,
     InputAdornment,
     IconButton,
 } from '@mui/material';

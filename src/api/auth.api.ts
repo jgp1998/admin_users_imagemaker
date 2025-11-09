@@ -1,32 +1,5 @@
+import type { LoginRequest, LoginResponse, RegisterRequest } from '../types';
 import apiClient from './client';
-
-interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-interface RegisterRequest {
-  name: string;
-  email: string;
-  password: string;
-}
-
-interface UserApiResponse {
-  id: string;
-  name: string;
-  email: string;
-  rol: string;
-  permissions: string[];
-  state?: boolean;
-  img?: string;
-  google?: boolean;
-  uid?: string;
-}
-
-interface LoginResponse {
-  user: UserApiResponse;
-  token: string;
-}
 
 export const authApi = {
   /**

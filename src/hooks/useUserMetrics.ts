@@ -1,21 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import { useUsersStore } from '../store';
-import type { UserDto } from '../types';
+import type {UserMetrics } from '../types';
 
-interface UserMetrics {
-  totalUsers: number;
-  activeUsers: number;
-  inactiveUsers: number;
-  adminCount: number;
-  vendedorCount: number;
-  usuarioCount: number;
-  activePercentage: number;
-  permissions: {
-    total: number;
-    unique: Set<string>;
-  };
-  users: UserDto[];
-}
 
 /**
  * Hook personalizado que calcula métricas sobre los usuarios

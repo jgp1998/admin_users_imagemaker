@@ -1,55 +1,14 @@
 import apiClient from './client';
-import type { UserDto } from '../types';
+import type {
+  CreateUserRequest,
+  CreateUserResponse,
+  DeleteUserResponse,
+  UpdateUserRequest,
+  UserDto,
+  UsersListRequest,
+  UsersListResponse
+} from '../types';
 
-interface UsersListRequest {
-  page?: number;
-  limit?: number;
-}
-
-interface UserApiResponse {
-  permissions: string[];
-  name: string;
-  email: string;
-  img?: string;
-  rol: string;
-  state: boolean;
-  google?: boolean;
-  uid: string;
-}
-
-interface UsersListResponse {
-  totalUsers: number;
-  users: UserApiResponse[];
-}
-
-interface CreateUserRequest {
-  name: string;
-  email: string;
-  password: string;
-  img?: string;
-  rol: string;
-  state?: boolean;
-  google?: boolean;
-}
-
-interface CreateUserResponse {
-  msj: string;
-  user: UserApiResponse;
-}
-
-interface UpdateUserRequest {
-  name?: string;
-  email?: string;
-  password?: string;
-  img?: string;
-  rol?: string;
-  state?: boolean;
-  google?: boolean;
-}
-
-interface DeleteUserResponse {
-  msj: string;
-}
 
 export const usersApi = {
   /**

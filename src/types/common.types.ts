@@ -28,16 +28,3 @@ export interface PaginationResponse<T> {
   totalPages: number;
 }
 
-export type UserRole = 'admin' | 'editor' | 'viewer';
-
-export const ROLES: Record<UserRole, UserRole> = {
-  admin: 'admin',
-  editor: 'editor',
-  viewer: 'viewer',
-};
-
-export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  admin: 3,
-  editor: 2,
-  viewer: 1,
-};

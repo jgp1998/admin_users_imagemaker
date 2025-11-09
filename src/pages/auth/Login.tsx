@@ -3,11 +3,9 @@ import {
     Alert,
 } from '@mui/material';
 
-import { AuthHeader } from '../../components/auth/AuthHeader';
 import { AuthLayout } from '../../layouts/AuthLayout';
-import { EmailField, PasswordField, AuthButton, LinkForm } from '../../components/auth/form/';
+import { EmailField, PasswordField, AuthButton, LinkForm, AuthHeader } from '../../components/auth/form/';
 import { useLoginForm } from '../../hooks/useLoginForm';
-
 
 const Login = () => {
     const {

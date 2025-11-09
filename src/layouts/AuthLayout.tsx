@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Container } from '@mui/material';
-import { AvatarUser } from '../components/auth/AvatarUser';
+import { AvatarUser } from '../components/auth/form';
+
 
 interface AuthLayoutProps {
   children: React.ReactNode;

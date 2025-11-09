@@ -9,8 +9,8 @@ import {
     Person as PersonIcon,
 } from '@mui/icons-material';
 import { AuthLayout } from '../../layouts/AuthLayout';
-import { AuthHeader } from '../../components/auth/AuthHeader';
-import { AuthButton, EmailField, LinkForm, PasswordField } from '../../components/auth/form';
+
+import { AuthButton, AuthHeader, EmailField, LinkForm, PasswordField } from '../../components/auth/form';
 import { useRegisterForm } from '../../hooks/useRegisterForm';
 
 const Register = () => {

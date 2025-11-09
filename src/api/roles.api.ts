@@ -1,40 +1,5 @@
+import type { PermissionsListResponse, Role, RolesListResponse } from '../types';
 import apiClient from './client';
-
-interface Permission {
-  id: string;
-  name: string;
-  description?: string;
-}
-
-interface Role {
-  id: string;
-  name: string;
-  description?: string;
-  permissions: Permission[];
-  rol?: string; // Campo de la API
-}
-
-interface RoleApiResponse {
-  _id: string;
-  rol: string;
-  name: string;
-}
-
-interface PermissionApiResponse {
-  _id: string;
-  rol: string;
-  permissions: string[];
-}
-
-interface RolesListResponse {
-  totalRoles: number;
-  roles: RoleApiResponse[];
-}
-
-interface PermissionsListResponse {
-  totalPermissions: number;
-  permissions: PermissionApiResponse[];
-}
 
 export const rolesAndPermissionsApi = {
   /**

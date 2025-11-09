@@ -1,24 +1,9 @@
-import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import UsersTable from '../components/UsersTable';
-import { useAuthStore } from '../store';
+import { useDashboardHandlers } from '../hooks/useDashboardHandlers';
 
 export const UsersPage = () => {
-  const navigate = useNavigate();
-  const { logout } = useAuthStore();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const handleProfileClick = () => {
-    console.log('Ir a perfil');
-  };
-
-  const handleSettingsClick = () => {
-    console.log('Ir a configuración');
-  };
+  const { handleLogout, handleProfileClick, handleSettingsClick } = useDashboardHandlers();
 
   return (
     <DashboardLayout

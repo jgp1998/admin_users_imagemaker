@@ -21,11 +21,11 @@ interface HeaderProps {
   onSettingsClick?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header = ({
   onMenuToggle,
   onProfileClick,
   onSettingsClick,
-}) => {
+}: HeaderProps) => {
   const { userName } = useAuthStore();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 

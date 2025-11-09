@@ -15,8 +15,6 @@ export const useAuthInit = () => {
       if (!token) return;
 
       try {
-        // Aquí podrías hacer una llamada a /auth/verify o similar
-        // Por ahora, solo verificamos que el token existe
         const isAuthenticated = authApi.isAuthenticated();
         
         if (!isAuthenticated) {

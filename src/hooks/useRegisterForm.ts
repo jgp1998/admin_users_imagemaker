@@ -21,7 +21,6 @@ interface UseRegisterFormReturn {
   handleClickShowConfirmPassword: () => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
 }
-
 /**
  * Hook personalizado para manejar la lógica del formulario de registro
  * Utiliza el estado global del authStore en lugar de useState

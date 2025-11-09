@@ -1,15 +1,5 @@
 import { toast } from 'react-toastify';
-
-type ToastType = 'success' | 'error' | 'info' | 'warning';
-
-interface ToastOptions {
-  position?: 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center';
-  autoClose?: number | false;
-  hideProgressBar?: boolean;
-  closeOnClick?: boolean;
-  pauseOnHover?: boolean;
-  draggable?: boolean;
-}
+import type { ToastOptions, ToastType } from '../types';
 
 const defaultOptions: ToastOptions = {
   position: 'top-right',
