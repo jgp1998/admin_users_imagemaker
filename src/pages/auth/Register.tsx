@@ -49,7 +49,7 @@ const Register = () => {
 
         try {
             // Registrar y auto-login
-            await login(name, email, 'viewer');
+            await login(email, password);
             // Navegar al dashboard
             navigate('/dashboard');
         } catch (err) {

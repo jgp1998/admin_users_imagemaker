@@ -32,8 +32,8 @@ const Login = () => {
         }
 
         try {
-            // Llamar al store para login
-            await login(email.split('@')[0], email, 'admin');
+            // Llamar al store para login con email y password
+            await login(email, password);
             // Navegar al dashboard
             navigate('/dashboard');
         } catch (err) {

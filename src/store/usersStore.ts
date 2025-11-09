@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { UserDto } from '../types';
+import { usersApi } from '../api';
 
 interface UsersState {
   users: UserDto[];
@@ -11,9 +12,9 @@ interface UsersState {
   
   // Acciones
   fetchUsers: () => Promise<void>;
-  addUser: (user: Omit<UserDto, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateUser: (id: string, user: Partial<UserDto>) => void;
-  deleteUser: (id: string) => void;
+  addUser: (user: Omit<UserDto, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateUser: (id: string, user: Partial<UserDto>) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
   setSearchTerm: (term: string) => void;
   setCurrentPage: (page: number) => void;
   setRowsPerPage: (rows: number) => void;
@@ -115,13 +116,23 @@ export const useUsersStore = create<UsersState>((set) => ({
   currentPage: 0,
   rowsPerPage: 5,
 
-  // Obtener usuarios (simular API)
+  // Obtener usuarios
   fetchUsers: async () => {
     try {
       set({ isLoading: true, error: null });
-      // Simular llamada a API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      set({ users: INITIAL_USERS, isLoading: false });
+      const response = await usersApi.getUsers({ page: 0, limit: 15 });
+      // Convertir respuesta de API a nuestro tipo
+      const users: UserDto[] = response.users.map((user) => ({
+        id: user.uid,
+        name: user.name,
+        email: user.email,
+        role: user.rol?.toLowerCase() === 'admin_role' ? 'admin' : 'viewer' as any,
+        isActive: user.state !== false,
+        claims: user.permissions || [],
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0],
+      }));
+      set({ users, isLoading: false });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar usuarios';
       set({ error: errorMessage, isLoading: false });
@@ -129,38 +140,79 @@ export const useUsersStore = create<UsersState>((set) => ({
   },
 
   // Agregar usuario
-  addUser: (user) => {
-    const newUser: UserDto = {
-      ...user,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
-    };
-    set((state) => ({
-      users: [...state.users, newUser],
-    }));
+  addUser: async (user) => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await usersApi.createUser({
+        name: user.name,
+        email: user.email,
+        password: 'temp123',
+        rol: 'USER_ROLE',
+        state: user.isActive,
+      });
+      
+      const newUser: UserDto = {
+        id: response.user.uid,
+        name: response.user.name,
+        email: response.user.email,
+        role: 'viewer',
+        isActive: true,
+        claims: response.user.permissions || [],
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0],
+      };
+      
+      set((state) => ({
+        users: [...state.users, newUser],
+        isLoading: false,
+      }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al crear usuario';
+      set({ error: errorMessage, isLoading: false });
+      throw err;
+    }
   },
 
   // Actualizar usuario
-  updateUser: (id, updatedData) => {
-    set((state) => ({
-      users: state.users.map((user) =>
-        user.id === id 
-          ? { 
-              ...user, 
-              ...updatedData,
-              updatedAt: new Date().toISOString().split('T')[0],
-            } 
-          : user
-      ),
-    }));
+  updateUser: async (id, updatedData) => {
+    try {
+      set({ isLoading: true, error: null });
+      await usersApi.updateUser(id, updatedData as any);
+      
+      set((state) => ({
+        users: state.users.map((user) =>
+          user.id === id 
+            ? { 
+                ...user, 
+                ...updatedData,
+                updatedAt: new Date().toISOString().split('T')[0],
+              } 
+            : user
+        ),
+        isLoading: false,
+      }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al actualizar usuario';
+      set({ error: errorMessage, isLoading: false });
+      throw err;
+    }
   },
 
   // Eliminar usuario
-  deleteUser: (id) => {
-    set((state) => ({
-      users: state.users.filter((user) => user.id !== id),
-    }));
+  deleteUser: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      await usersApi.deleteUser(id);
+      
+      set((state) => ({
+        users: state.users.filter((user) => user.id !== id),
+        isLoading: false,
+      }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar usuario';
+      set({ error: errorMessage, isLoading: false });
+      throw err;
+    }
   },
 
   // Búsqueda
